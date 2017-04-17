@@ -3,228 +3,194 @@
  * @author ielgnaw(wuji0223@gmail.com)
  */
 
+import {join, basename} from 'path';
+import {readdirSync, existsSync, statSync} from 'fs';
 import inquirer from 'inquirer';
-import BottomBar from 'inquirer/lib/ui/bottom-bar';
-import cmdify from 'cmdify';
 import ora from 'ora';
+import async from 'async';
+import Metalsmith from 'metalsmith';
+import rimraf from 'rimraf';
+import consolidate from 'consolidate';
+import user from '../git-user';
 
-var directionsPrompt = {
-  type: 'list',
-  name: 'direction',
-  message: 'Which direction would you like to go?',
-  choices: ['Forward', 'Right', 'Left', 'Back']
+const RENDER = consolidate.handlebars.render;
+
+/**
+ * 提示问题
+ *
+ * @type {Object}
+ */
+const PROMPTS = {
+    name: {
+        type: 'input',
+        message: 'Project name'
+    },
+    description: {
+        type: 'input',
+        message: 'Project description',
+        default: 'Project description'
+    },
+    author: {
+        type: 'input',
+        message: 'Author'
+    }
 };
 
-function main() {
-  console.log('You find youself in a small room, there is a door in front of you.');
-  exitHouse();
-}
-
-function exitHouse() {
-  inquirer.prompt(directionsPrompt).then(function (answers) {
-    if (answers.direction === 'Forward') {
-      console.log('You find yourself in a forest');
-      console.log('There is a wolf in front of you; a friendly looking dwarf to the right and an impasse to the left.');
-      encounter1();
-    } else {
-      console.log('You cannot go that way. Try again');
-      exitHouse();
+/**
+ * 设置提示问题的默认值
+ *
+ * @param {Object} prompts 提示问题
+ * @param {string} key 提示问题的 key
+ * @param {string} val 提示问题的 value
+ */
+const setDefault = (prompts, key, val) => {
+    if (!prompts[key] || typeof prompts[key] !== 'object') {
+        prompts[key] = {
+            type: 'input',
+            default: val
+        };
     }
-  });
-}
-
-function encounter1() {
-  inquirer.prompt(directionsPrompt).then(function (answers) {
-    var direction = answers.direction;
-    if (direction === 'Forward') {
-      console.log('You attempt to fight the wolf');
-      console.log('Theres a stick and some stones lying around you could use as a weapon');
-      encounter2b();
-    } else if (direction === 'Right') {
-      console.log('You befriend the dwarf');
-      console.log('He helps you kill the wolf. You can now move forward');
-      encounter2a();
-    } else {
-      console.log('You cannot go that way');
-      encounter1();
+    else {
+        prompts[key]['default'] = val;
     }
-  });
-}
+};
 
-function encounter2a() {
-  inquirer.prompt(directionsPrompt).then(function (answers) {
-    var direction = answers.direction;
-    if (direction === 'Forward') {
-      var output = 'You find a painted wooden sign that says:';
-      output += ' \n';
-      output += ' ____  _____  ____  _____ \n';
-      output += '(_  _)(  _  )(  _ \\(  _  ) \n';
-      output += '  )(   )(_)(  )(_) ))(_)(  \n';
-      output += ' (__) (_____)(____/(_____) \n';
-      console.log(output);
-    } else {
-      console.log('You cannot go that way');
-      encounter2a();
+const ask = curPrompts => {
+    return (files, metalsmith, done) => {
+        const metadata = metalsmith.metadata();
+        async.eachSeries(Object.keys(curPrompts), (key, next) => {
+            run(metadata, key, curPrompts[key], next);
+        }, done);
+
+        function run(data, key, prompt, done) {
+            let promptDefault = prompt.default;
+            if (typeof prompt.default === 'function') {
+                promptDefault = () => prompt.default.bind(this)(data);
+            }
+
+            inquirer.prompt([{
+                type: prompt.type,
+                name: key,
+                message: prompt.message || prompt.label || key,
+                default: promptDefault,
+                choices: prompt.choices || [],
+                validate: prompt.validate || (() => true)
+            }]).then(answers => {
+                if (Array.isArray(answers[key])) {
+                    data[key] = {};
+                    answers[key].forEach(multiChoiceAnswer => {
+                        data[key][multiChoiceAnswer] = true;
+                    });
+                }
+                else if (typeof answers[key] === 'string') {
+                    data[key] = answers[key].replace(/"/g, '\\"');
+                }
+                else {
+                    data[key] = answers[key];
+                }
+
+                done();
+            });
+        }
+    };
+};
+
+/**
+ * 渲染模板
+ *
+ * @param {Object} files files 对象
+ * @param {Object} metalsmith metalsmith 实例对象
+ * @param {Function} done 完成回调函数
+ */
+const renderTemplate = (files, metalsmith, done) => {
+    const keys = Object.keys(files);
+    const metadata = metalsmith.metadata();
+    async.each(keys, run, done);
+
+    function run(file, done) {
+        var str = files[file].contents.toString();
+        RENDER(str, metadata, (err, res) => {
+            if (err) {
+                return done(err);
+            }
+            files[file].contents = new Buffer(res);
+            done();
+        });
     }
-  });
-}
+};
 
-function encounter2b() {
-  inquirer.prompt({
-    type: 'list',
-    name: 'weapon',
-    message: 'Pick one',
-    choices: [
-      'Use the stick',
-      'Grab a large rock',
-      'Try and make a run for it',
-      'Attack the wolf unarmed'
-    ]
-  }).then(function () {
-    console.log('The wolf mauls you. You die. The end.');
-  });
-}
+/**
+ * generate project
+ *
+ * @param {Object} curPrompts 当前的提示问题
+ * @param {string} projectName 项目名称
+ * @param {boolean} inCurrent 是否在当前目录直接创建项目
+ */
+const generate = (curPrompts, projectName, inCurrent) => {
+    const metalsmith = new Metalsmith(join(__dirname, '../template')).source('.');
+    metalsmith
+        .use(ask(curPrompts))
+        .use(renderTemplate)
+        .clean(false)
+        .destination(join(process.cwd(), inCurrent ? '.' : projectName))
+        .build(err => {
+            if (err) {
+                throw err;
+            }
+        });
+};
+
+/**
+ * inquirer.prompt then function
+ *
+ * @param {string} projectName 项目名称
+ * @param {boolean} inCurrent 是否在当前目录直接创建项目
+ */
+const inquirerPromptDone = (projectName, inCurrent) => {
+    const curPrompts = Object.assign({}, PROMPTS);
+    setDefault(curPrompts, 'name', projectName);
+    setDefault(curPrompts, 'author', user());
+    generate(curPrompts, projectName, inCurrent);
+};
 
 export default {
     command: ['init [directory]'],
     describe: 'Initialize project in the current directory or specified directory',
     builder: {},
     handler: argv => {
-        // var questions = [
-        //   {
-        //     type: 'input',
-        //     name: 'first_name',
-        //     message: 'What\'s your first name'
-        //   },
-        //   {
-        //     type: 'input',
-        //     name: 'last_name',
-        //     message: 'What\'s your last name',
-        //     default: function () {
-        //       return 'Doe';
-        //     }
-        //   },
-        //   {
-        //     type: 'input',
-        //     name: 'phone',
-        //     message: 'What\'s your phone number',
-        //     validate: function (value) {
-        //       var pass = value.match(/^([01]{1})?[-.\s]?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})\s?((?:#|ext\.?\s?|x\.?\s?){1}(?:\d+)?)?$/i);
-        //       if (pass) {
-        //         return true;
-        //       }
-
-        //       return 'Please enter a valid phone number';
-        //     }
-        //   }
-        // ];
-
-        // inquirer.prompt(questions).then(function (answers) {
-        //   console.log(JSON.stringify(answers, null, '  '));
-        // });
-
-        // main();
-
-        // inquirer.prompt([
-        //       {
-        //         type: 'checkbox',
-        //         message: 'Select toppings',
-        //         name: 'toppings',
-        //         choices: [
-        //           new inquirer.Separator(' = The Meats = '),
-        //           {
-        //             name: 'Pepperoni'
-        //           },
-        //           {
-        //             name: 'Ham'
-        //           },
-        //           {
-        //             name: 'Ground Meat'
-        //           },
-        //           {
-        //             name: 'Bacon'
-        //           },
-        //           new inquirer.Separator(' = The Cheeses = '),
-        //           {
-        //             name: 'Mozzarella',
-        //             checked: true
-        //           },
-        //           {
-        //             name: 'Cheddar'
-        //           },
-        //           {
-        //             name: 'Parmesan'
-        //           },
-        //           new inquirer.Separator(' = The usual ='),
-        //           {
-        //             name: 'Mushroom'
-        //           },
-        //           {
-        //             name: 'Tomato'
-        //           },
-        //           new inquirer.Separator(' = The extras = '),
-        //           {
-        //             name: 'Pineapple'
-        //           },
-        //           {
-        //             name: 'Olives',
-        //             disabled: 'out of stock'
-        //           },
-        //           {
-        //             name: 'Extra cheese'
-        //           }
-        //         ],
-        //         validate: function (answer) {
-        //           if (answer.length < 1) {
-        //             return 'You must choose at least one topping.';
-        //           }
-        //           return true;
-        //         }
-        //       }
-        //     ]).then(function (answers) {
-        //       console.log(JSON.stringify(answers, null, '  '));
-        //     });
-
-        var loader = [
-          '/ Installing',
-          '| Installing',
-          '\\ Installing',
-          '- Installing'
-        ];
-        var i = 4;
-        var ui = new BottomBar({bottomBar: loader[i % 4]});
-
-        setInterval(function () {
-          ui.updateBottomBar(loader[i++ % 4]);
-        }, 300);
-
-        var spawn = require('child_process').spawn;
-
-        var cmd = spawn(cmdify('npm'), ['-g', 'install', 'inquirer'], {stdio: 'pipe'});
-        cmd.stdout.pipe(ui.log);
-        cmd.on('close', function () {
-          ui.updateBottomBar('Installation done!\n');
-          process.exit();
-        });
-
-        // const spinner = new ora({
-        //     text: 'Loading unicorns'
-        // });
-
-        // spinner.start();
-
-        // setTimeout(() => {
-        //     spinner.color = 'yellow';
-        //     spinner.text = 'Loading rainbows';
-        // }, 1000);
-
-        // setTimeout(() => {
-        //     spinner.succeed('succeed');
-        //     spinner.fail('fail');
-        //     spinner.warn('warn');
-        //     spinner.info('info');
-        //     spinner.stopAndPersist({symbol: '@', text: 'all done'});
-        // }, 2000);
-        // console.log(argv);
+        let directory = argv.directory;
+        if (!directory || directory === '.') {
+            inquirer.prompt([{
+                type: 'confirm',
+                message: !readdirSync('.', 'utf8').length
+                    ? 'Generate project in current directory'
+                    : 'The current directory is not empty, do you want to overwrite',
+                name: 'ok'
+            }]).then(answers => {
+                if (!answers.ok) {
+                    return;
+                }
+                inquirerPromptDone(basename(process.cwd()), true);
+            });
+        }
+        else {
+            if (existsSync(directory) && statSync(directory).isDirectory()) {
+                inquirer.prompt([{
+                    type: 'confirm',
+                    message: 'Target directory exists. Continue?',
+                    name: 'ok',
+                }]).then(answers => {
+                    if (!answers.ok) {
+                        return;
+                    }
+                    rimraf.sync(join('.', directory));
+                    inquirerPromptDone(directory);
+                });
+                return;
+            }
+            else {
+                inquirerPromptDone(directory);
+            }
+        }
     }
 };

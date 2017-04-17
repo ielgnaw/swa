@@ -6,12 +6,13 @@
 import {join, basename} from 'path';
 import {readdirSync, existsSync, statSync} from 'fs';
 import inquirer from 'inquirer';
-import ora from 'ora';
+import BottomBar from 'inquirer/lib/ui/bottom-bar';
 import async from 'async';
 import Metalsmith from 'metalsmith';
 import rimraf from 'rimraf';
 import consolidate from 'consolidate';
 import user from '../git-user';
+import npmInstall from '../npm-install';
 
 const RENDER = consolidate.handlebars.render;
 
@@ -55,9 +56,15 @@ const setDefault = (prompts, key, val) => {
     }
 };
 
+/**
+ * metalsmith plugin repl
+ *
+ * @param {Object} curPrompts 当前的提示问题
+ */
 const ask = curPrompts => {
     return (files, metalsmith, done) => {
         const metadata = metalsmith.metadata();
+
         async.eachSeries(Object.keys(curPrompts), (key, next) => {
             run(metadata, key, curPrompts[key], next);
         }, done);
@@ -96,7 +103,7 @@ const ask = curPrompts => {
 };
 
 /**
- * 渲染模板
+ * metalsmith plugin 渲染模板
  *
  * @param {Object} files files 对象
  * @param {Object} metalsmith metalsmith 实例对象
@@ -105,6 +112,7 @@ const ask = curPrompts => {
 const renderTemplate = (files, metalsmith, done) => {
     const keys = Object.keys(files);
     const metadata = metalsmith.metadata();
+
     async.each(keys, run, done);
 
     function run(file, done) {
@@ -127,16 +135,26 @@ const renderTemplate = (files, metalsmith, done) => {
  * @param {boolean} inCurrent 是否在当前目录直接创建项目
  */
 const generate = (curPrompts, projectName, inCurrent) => {
+    const dest = inCurrent ? '.' : projectName;
     const metalsmith = new Metalsmith(join(__dirname, '../template')).source('.');
     metalsmith
         .use(ask(curPrompts))
         .use(renderTemplate)
         .clean(false)
-        .destination(join(process.cwd(), inCurrent ? '.' : projectName))
+        .destination(join(process.cwd(), dest))
         .build(err => {
             if (err) {
                 throw err;
             }
+            const DEV_DEPENDENCIES = [
+                'chai', 'mocha'
+                /*'babel-cli', 'babel-core', 'babel-preset-es2015', 'babel-preset-stage-2',
+                'babel-istanbul', 'babel-plugin-add-module-exports', 'fecs', 'chai', 'mocha'*/
+            ];
+            process.chdir(dest);
+            npmInstall(DEV_DEPENDENCIES, {saveDev: true}, () => {
+                console.log('all deps install done');
+            });
         });
 };
 

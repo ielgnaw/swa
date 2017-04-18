@@ -7,12 +7,11 @@ import spawn from 'cross-spawn';
 import chalk from 'chalk';
 import Ora from 'ora';
 
-export default function (deps, opts, allDone) {
-    if (!Array.isArray(deps)) {
-        deps = [deps];
-    }
+const install = (deps, opts, allDone) => {
     const len = deps.length;
-    deps.forEach((dep, index) => {
+    if (len) {
+        const dep = deps.shift();
+
         const spinner = new Ora({
             text: `Installing ${dep}...`
         });
@@ -21,14 +20,37 @@ export default function (deps, opts, allDone) {
         // 是 dependencies 还是 devDependencies，默认为 dependencies
         const depArgs = opts.saveDev ? '-D' : '-S';
 
-        spawn('npm', ['install', depArgs, dep], {stdio: 'pipe'}).on('error', err => {
-            spinner.fail(chalk.red(`err: install ${dep}`));
-            throw err;
-        }).on('close', () => {
-            spinner.succeed(chalk.green(`installed ${dep}`));
-            if (index === len - 1 && typeof allDone === 'function') {
-                allDone();
-            }
+        let stderrData = '';
+        const child = spawn('npm', ['install', depArgs, dep]);
+
+        child.stderr.on('data', data => {
+            stderrData += data.toString();
         });
-    });
+
+        child.on('error', err => {
+            spinner.fail(chalk.red(`err: Install ${dep}:\n${stderrData}`));
+            throw err;
+        })
+
+        child.on('close', (code, s) => {
+            if (code !== 0) {
+                spinner.fail(chalk.red(`err: Install ${dep}:\n${stderrData}`));
+                process.exit(code);
+            }
+            spinner.succeed(chalk.green(`Installed ${dep}`));
+            install(deps, opts, allDone);
+        });
+
+        return;
+    }
+
+    allDone();
+};
+
+export default function (deps, opts, allDone) {
+    if (!Array.isArray(deps)) {
+        deps = [deps];
+    }
+
+    install(deps, opts, allDone);
 }

@@ -147,7 +147,7 @@ const generate = (curPrompts, projectName, inCurrent) => {
                 throw err;
             }
             const DEV_DEPENDENCIES = [
-                'chai', 'mocha'
+                'mocha33', 'chai'
                 /*'babel-cli', 'babel-core', 'babel-preset-es2015', 'babel-preset-stage-2',
                 'babel-istanbul', 'babel-plugin-add-module-exports', 'fecs', 'chai', 'mocha'*/
             ];

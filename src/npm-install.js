@@ -7,7 +7,7 @@ import spawn from 'cross-spawn';
 import chalk from 'chalk';
 import Ora from 'ora';
 
-const install = (deps, opts, allDone) => {
+const install = (deps, opts, done) => {
     const len = deps.length;
     if (len) {
         const dep = deps.shift();
@@ -30,27 +30,28 @@ const install = (deps, opts, allDone) => {
         child.on('error', err => {
             spinner.fail(chalk.red(`err: Install ${dep}:\n${stderrData}`));
             throw err;
-        })
+        });
 
-        child.on('close', (code, s) => {
+        child.on('close', code => {
             if (code !== 0) {
                 spinner.fail(chalk.red(`err: Install ${dep}:\n${stderrData}`));
                 process.exit(code);
             }
             spinner.succeed(chalk.green(`Installed ${dep}`));
-            install(deps, opts, allDone);
+            install(deps, opts, done);
         });
 
         return;
     }
 
-    allDone();
+    done();
 };
 
-export default function (deps, opts, allDone) {
-    if (!Array.isArray(deps)) {
-        deps = [deps];
-    }
-
-    install(deps, opts, allDone);
+export default function (depsMap, allDone) {
+    const {save = [], saveDev = []} = depsMap;
+    console.log(`\n${chalk.cyan('Starting dependencies installation')}\n`);
+    install(save, {save: true}, () => {
+        console.log(`\n${chalk.cyan('Starting devDependencies installation')}\n`);
+        install(saveDev, {saveDev: true}, allDone);
+    });
 }

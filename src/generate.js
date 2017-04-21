@@ -136,7 +136,13 @@ export default function(curPrompts, projectName, inCurrent) {
             if (err) {
                 throw err;
             }
-            // console.log(metalsmith.metadata());
+
+            const curDependencies = Object.assign({}, meta.ALL_DEPENDENCIES);
+
+            const metadata = metalsmith.metadata();
+            if (metadata.redis) {
+                curDependencies.save.push('redis');
+            }
 
             process.chdir(dest);
 

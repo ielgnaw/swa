@@ -31,6 +31,7 @@ const ask = curPrompts => {
                 console.log(`\n---- ${prompt.message} set (Now we only support MySQL) ----`);
                 return done();
             }
+
             let promptDefault = prompt.default;
             if (typeof prompt.default === 'function') {
                 promptDefault = () => prompt.default.bind(this)(data);
@@ -42,7 +43,8 @@ const ask = curPrompts => {
                 message: prompt.message || prompt.label || key,
                 default: promptDefault,
                 choices: prompt.choices || [],
-                validate: prompt.validate || (() => true)
+                validate: prompt.validate || (() => true),
+                filter: prompt.filter || (() => {})
             }]).then(answers => {
                 if (Array.isArray(answers[key])) {
                     data[key] = {};
@@ -108,10 +110,20 @@ export function setDefault(prompts, key, val) {
     }
 }
 
+/**
+ * metalsmith plugin 过滤文件，把一些根据命令行选择项参数的文件过滤掉
+ *
+ * @param {Object} files files 对象
+ * @param {Object} metalsmith metalsmith 实例对象
+ * @param {Function} done 完成回调函数
+ */
 function filterFiles(files, metalsmith, done) {
     const metadata = metalsmith.metadata();
     if (!metadata.redis) {
         delete files['server/conf/redis.js'];
+    }
+    if (!metadata.uuap) {
+        delete files['server/conf/uuap.js'];
     }
     done();
 }
@@ -140,14 +152,21 @@ export default function(curPrompts, projectName, inCurrent) {
             const curDependencies = Object.assign({}, meta.ALL_DEPENDENCIES);
 
             const metadata = metalsmith.metadata();
+            console.log('metadata', metadata);
+
             if (metadata.redis) {
                 curDependencies.save.push('redis');
+            }
+
+            if (metadata.auth === 'uuap') {
+                curDependencies.saveDev.push('jsonwebtoken');
             }
 
             process.chdir(dest);
 
             npmInstall(meta.ALL_DEPENDENCIES, () => {
-                console.log('all deps install done');
+                console.log('all deps install done\n');
+                console.log('Please complete your profile:\n');
             });
         });
 }

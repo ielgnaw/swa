@@ -27,6 +27,14 @@ export default {
             type: 'confirm',
             message: 'Use Redis'
         },
+        auth: {
+            type: 'list',
+            message: 'Auth',
+            choices: ['UUAP', 'Passport', 'none'],
+            filter: val => {
+                return val.toLowerCase();
+            }
+        }
         // separator: {
         //     message: 'Database'
         // },
@@ -39,10 +47,10 @@ export default {
      */
     ALL_DEPENDENCIES: {
         save: [
-            'knex', 'mysql'
+            'mysql'
         ],
         saveDev: [
-            // 'chai'
+            'chai'
         ]
     }
 };

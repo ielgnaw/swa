@@ -1,5 +1,5 @@
 /**
- * @file npm install 模块
+ * @file yarn install 模块
  * @author ielgnaw(wuji0223@gmail.com)
  */
 
@@ -18,10 +18,10 @@ const install = (deps, opts, done) => {
         spinner.start();
 
         // 是 dependencies 还是 devDependencies，默认为 dependencies
-        const depArgs = opts.saveDev ? '-D' : '-S';
+        const depArgs = opts.saveDev ? '-D' : '';
 
         let stderrData = '';
-        const child = spawn('npm', ['install', depArgs, `--registry=${opts.registry}`, dep]);
+        const child = spawn('yarn', ['add', depArgs, dep]);
 
         child.stderr.on('data', data => {
             stderrData += data.toString();
@@ -47,11 +47,11 @@ const install = (deps, opts, done) => {
     done();
 };
 
-export default function (depsMap, registry, allDone) {
+export default function (depsMap, allDone) {
     const {save = [], saveDev = []} = depsMap;
     console.log(`\n${chalk.cyan('Starting dependencies installation')}\n`);
-    install(save, {save: true, registry: registry}, () => {
+    install(save, {save: true}, () => {
         console.log(`\n${chalk.cyan('Starting devDependencies installation')}\n`);
-        install(saveDev, {saveDev: true, registry: registry}, allDone);
+        install(saveDev, {saveDev: true}, allDone);
     });
 }

@@ -9,6 +9,7 @@ import async from 'async';
 import Metalsmith from 'metalsmith';
 import consolidate from 'consolidate';
 import npmInstall from './npm-install';
+import yarnInstall from './yarn-install';
 import meta from './meta';
 
 const RENDER = consolidate.handlebars.render;
@@ -44,7 +45,7 @@ const ask = curPrompts => {
                 default: promptDefault,
                 choices: prompt.choices || [],
                 validate: prompt.validate || (() => true),
-                filter: prompt.filter || (() => {})
+                filter: prompt.filter
             }]).then(answers => {
                 if (Array.isArray(answers[key])) {
                     data[key] = {};
@@ -133,9 +134,10 @@ function filterFiles(files, metalsmith, done) {
  *
  * @param {Object} curPrompts 当前的提示问题
  * @param {string} projectName 项目名称
+ * @param {string} registry npm registry url
  * @param {boolean} inCurrent 是否在当前目录直接创建项目
  */
-export default function(curPrompts, projectName, inCurrent) {
+export default function(curPrompts, projectName, registry, inCurrent) {
     const dest = inCurrent ? '.' : projectName;
     const metalsmith = new Metalsmith(join(__dirname, './template')).source('.');
     metalsmith
@@ -154,19 +156,27 @@ export default function(curPrompts, projectName, inCurrent) {
             const metadata = metalsmith.metadata();
             console.log('metadata', metadata);
 
-            if (metadata.redis) {
-                curDependencies.save.push('redis');
-            }
+            // if (metadata.redis) {
+            //     curDependencies.save.push('redis');
+            // }
 
-            if (metadata.auth === 'uuap') {
-                curDependencies.saveDev.push('jsonwebtoken');
-            }
+            // if (metadata.uuap) {
+            //     curDependencies.saveDev.push('jsonwebtoken');
+            // }
 
             process.chdir(dest);
 
-            npmInstall(meta.ALL_DEPENDENCIES, () => {
-                console.log('all deps install done\n');
-                console.log('Please complete your profile:\n');
-            });
+            if (metadata.depPkg === 'npm') {
+                npmInstall(meta.ALL_DEPENDENCIES, registry, () => {
+                    console.log('all deps install done\n');
+                    console.log('Please complete your profile:\n');
+                });
+            }
+            else {
+                yarnInstall(meta.ALL_DEPENDENCIES, () => {
+                    console.log('all deps install done\n');
+                    console.log('Please complete your profile:\n');
+                });
+            }
         });
 }

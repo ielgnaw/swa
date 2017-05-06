@@ -6,6 +6,7 @@
 import {join, basename} from 'path';
 import {readdirSync, existsSync, statSync} from 'fs';
 import inquirer from 'inquirer';
+import chalk from 'chalk';
 import rimraf from 'rimraf';
 import user from '../git-user';
 import meta from '../meta';
@@ -15,21 +16,32 @@ import generate, {setDefault} from '../generate';
  * inquirer.prompt then function
  *
  * @param {string} projectName 项目名称
+ * @param {string} registry npm registry url
  * @param {boolean} inCurrent 是否在当前目录直接创建项目
  */
-const inquirerPromptDone = (projectName, inCurrent) => {
+const inquirerPromptDone = (projectName, registry, inCurrent) => {
     const curPrompts = Object.assign({}, meta.PROMPTS);
     setDefault(curPrompts, 'name', projectName);
     setDefault(curPrompts, 'author', user());
-    generate(curPrompts, projectName, inCurrent);
+    generate(curPrompts, projectName, registry, inCurrent);
 };
 
 export default {
     command: ['init [directory]'],
     describe: 'Initialize project in the current directory or specified directory',
-    builder: {},
+    builder: {
+        // r: {
+        //     desc: 'Set NPM Registry URL',
+        //     alias: 'registry',
+        //     default: 'http://registry.npmjs.org'
+        // }
+    },
     handler: argv => {
-        let directory = argv.directory;
+        const {registry, directory} = argv;
+        if (!registry.trim()) {
+            console.log(chalk.red('err: Please set a valid NPM Registry URL.'));
+            process.exit(1);
+        }
         if (!directory || directory === '.') {
             inquirer.prompt([{
                 type: 'confirm',
@@ -41,7 +53,7 @@ export default {
                 if (!answers.ok) {
                     return;
                 }
-                inquirerPromptDone(basename(process.cwd()), true);
+                inquirerPromptDone(basename(process.cwd()), registry, true);
             });
         }
         else {
@@ -55,12 +67,12 @@ export default {
                         return;
                     }
                     rimraf.sync(join('.', directory));
-                    inquirerPromptDone(directory);
+                    inquirerPromptDone(directory, registry);
                 });
                 return;
             }
             else {
-                inquirerPromptDone(directory);
+                inquirerPromptDone(directory, registry);
             }
         }
     }

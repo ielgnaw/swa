@@ -15,10 +15,15 @@ figlet('S W A', (err, data) => {
         console.dir(err);
         return;
     }
-    console.log(data);
     yargs
         .usage('Usage: $0 <command> [options]')
         .commandDir(join(__dirname, './command'))
+        .option('r', {
+            alias: 'registry',
+            default: 'http://registry.npmjs.org',
+            desc: 'Set NPM Registry URL',
+            type: 'string'
+        })
         .example(
             '$0 init',
             'Initialize Project in current directory.'

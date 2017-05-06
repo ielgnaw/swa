@@ -27,14 +27,24 @@ export default {
             type: 'confirm',
             message: 'Use Redis'
         },
-        auth: {
+        uuap: {
+            type: 'confirm',
+            message: 'Use UUAP'
+        },
+        depPkg: {
             type: 'list',
-            message: 'Auth',
-            choices: ['UUAP', 'Passport', 'none'],
-            filter: val => {
-                return val.toLowerCase();
-            }
+            message: 'Select dependencies pkg manager',
+            choices: ['npm', 'yarn'],
         }
+        // auth: {
+        //     type: 'list',
+        //     message: 'Auth',
+        //     choices: ['UUAP', 'Passport', 'none'],
+        //     filter: val => {
+        //         return val.toLowerCase();
+        //     }
+        // }
+
         // separator: {
         //     message: 'Database'
         // },
@@ -47,10 +57,19 @@ export default {
      */
     ALL_DEPENDENCIES: {
         save: [
-            'mysql'
         ],
         saveDev: [
-            'chai'
+            'autoprefixer', 'babel-cli', 'babel-core', 'babel-loader', 'babel-plugin-import',
+            'babel-plugin-transform-object-assign', 'babel-plugin-transform-runtime', 'babel-polyfill',
+            'babel-preset-es2015', 'babel-preset-react', 'babel-preset-stage-2', 'babel-register', 'chalk',
+            'cheerio', 'co', 'co-views', 'compression-webpack-plugin', 'cross-env', 'css-loader', 'debug', 'errno',
+            'eslint-friendly-formatter', 'eventsource-polyfill', 'extract-text-webpack-plugin', 'fecs', 'file-loader',
+            'file-size', 'forever-cluster', 'html-webpack-plugin', 'json-loader', 'jsonwebtoken', 'knex', 'koa',
+            'koa-body', 'koa-bodyparser', 'koa-json', 'koa-ln', 'koa-onerror', 'koa-router', 'koa-static',
+            'koa-webpack-middleware', 'less', 'less-loader', 'mkdirp', 'moment', 'moment-precise-range-plugin',
+            'mysql', 'node-fetch', 'nodemon', 'ora', 'postcss-loader', 'redis', 'rider', 'shelljs',
+            'style-loader', 'stylus', 'stylus-loader', 'swig', 'url-loader', 'webpack', 'webpack-dev-middleware',
+            'webpack-hot-middleware', 'webpack-merge', 'xmlparser'
         ]
     }
 };

@@ -34,7 +34,7 @@ export default {
         depPkg: {
             type: 'list',
             message: 'Select dependencies pkg manager',
-            choices: ['npm', 'yarn'],
+            choices: ['none', 'npm', 'yarn'],
         }
         // auth: {
         //     type: 'list',
@@ -57,7 +57,10 @@ export default {
      */
     ALL_DEPENDENCIES: {
         save: [
+            'react', 'react-dom'
         ],
+        // koa-webpack-middleware 1.0.4 有点问题，等待作者重新发包
+        // koa-bodyparser > 2 版本需要 node 7.6+
         saveDev: [
             'autoprefixer', 'babel-cli', 'babel-core', 'babel-loader', 'babel-plugin-import',
             'babel-plugin-transform-object-assign', 'babel-plugin-transform-runtime', 'babel-polyfill',
@@ -65,8 +68,8 @@ export default {
             'cheerio', 'co', 'co-views', 'compression-webpack-plugin', 'cross-env', 'css-loader', 'debug', 'errno',
             'eslint-friendly-formatter', 'eventsource-polyfill', 'extract-text-webpack-plugin', 'fecs', 'file-loader',
             'file-size', 'forever-cluster', 'html-webpack-plugin', 'json-loader', 'jsonwebtoken', 'knex', 'koa',
-            'koa-body', 'koa-bodyparser', 'koa-json', 'koa-ln', 'koa-onerror', 'koa-router', 'koa-static',
-            'koa-webpack-middleware', 'less', 'less-loader', 'mkdirp', 'moment', 'moment-precise-range-plugin',
+            'koa-body', 'koa-bodyparser@2', 'koa-json', 'koa-ln', 'koa-onerror', 'koa-router', 'koa-static',
+            'koa-webpack-middleware@1.0.3', 'less', 'less-loader', 'mkdirp', 'moment', 'moment-precise-range-plugin',
             'mysql', 'node-fetch', 'nodemon', 'ora', 'postcss-loader', 'redis', 'rider', 'shelljs',
             'style-loader', 'stylus', 'stylus-loader', 'swig', 'url-loader', 'webpack', 'webpack-dev-middleware',
             'webpack-hot-middleware', 'webpack-merge', 'xmlparser'

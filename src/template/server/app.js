@@ -26,16 +26,16 @@ import webpackDevConfig from '../build/webpack.dev.conf';
 import webpackProdConfig from '../build/webpack.prod.conf';
 import {setCtxRenderPath, getIP} from '../build/util';
 import config from '../build/config';
-import {logDir, clicksLogDir} from './util';
+import {logDir/*, clicksLogDir*/} from './util';
 // import {setCtx} from './conf/db';
 
 if (!existsSync(logDir)) {
     mkdirp.sync(logDir);
 }
 
-if (!existsSync(clicksLogDir)) {
-    mkdirp.sync(clicksLogDir);
-}
+// if (!existsSync(clicksLogDir)) {
+//     mkdirp.sync(clicksLogDir);
+// }
 
 const debug = debugPackage('dev-server');
 const IS_DEV = process.env.NODE_ENV === 'development';
@@ -57,32 +57,32 @@ app.use(logger.app({type: 'file', path: './logs/'}));
 
 ///////////////////////////////////////
 
-import redisConf from './conf/redis';
-console.log('redisConf',redisConf);
+// import redisConf from './conf/redis';
+// console.log('redisConf',redisConf);
 
-var redis = require('redis');
-var client = redis.createClient(redisConf);
+// var redis = require('redis');
+// var client = redis.createClient(redisConf);
 
-client.on('error', function (err) {
-    console.log('error event - ' + client.host + ':' + client.port + ' - ' + err);
-});
+// client.on('error', function (err) {
+//     console.log('error event - ' + client.host + ':' + client.port + ' - ' + err);
+// });
 
-client.set('string key', 'string val', redis.print);
-client.hset('hash key', 'hashtest 1', 'some value', redis.print);
-client.hset(['hash key', 'hashtest 2', 'some other value'], redis.print);
-client.hkeys('hash key', function (err, replies) {
-    if (err) {
-        return console.error('error response - ' + err);
-    }
+// client.set('string key', 'string val', redis.print);
+// client.hset('hash key', 'hashtest 1', 'some value', redis.print);
+// client.hset(['hash key', 'hashtest 2', 'some other value'], redis.print);
+// client.hkeys('hash key', function (err, replies) {
+//     if (err) {
+//         return console.error('error response - ' + err);
+//     }
 
-    console.log(replies.length + ' replies:');
-    replies.forEach(function (reply, i) {
-        console.log('    ' + i + ': ' + reply);
-    });
-});
+//     console.log(replies.length + ' replies:');
+//     replies.forEach(function (reply, i) {
+//         console.log('    ' + i + ': ' + reply);
+//     });
+// });
 
-client.quit(function (err, res) {
-});
+// client.quit(function (err, res) {
+// });
 
 ///////////////////////////////////////
 

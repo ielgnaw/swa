@@ -21,7 +21,7 @@ const install = (deps, opts, done) => {
         const depArgs = opts.saveDev ? '-D' : '';
 
         let stderrData = '';
-        const child = spawn('yarn', ['add', depArgs, dep]);
+        const child = spawn('yarn', ['add', dep, depArgs]);
 
         child.stderr.on('data', data => {
             stderrData += data.toString();

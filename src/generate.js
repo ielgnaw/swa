@@ -3,16 +3,23 @@
  * @author ielgnaw(wuji0223@gmail.com)
  */
 
-import {join} from 'path';
+import {join, extname} from 'path';
 import inquirer from 'inquirer';
 import async from 'async';
 import Metalsmith from 'metalsmith';
+import metalsmithCopy from 'metalsmith-copy';
 import consolidate from 'consolidate';
 import npmInstall from './npm-install';
 import yarnInstall from './yarn-install';
 import meta from './meta';
 
-const RENDER = consolidate.handlebars.render;
+const RENDER = consolidate.ejs.render;
+
+// 不需要 RENDER 的文件后缀集合
+const NOT_RENDER_SUFFIX = [
+    '.eot', '.svg', '.ttf', '.woff', '.woff2',
+    '.png', '.jpg', '.jpeg', '.gif', '.webp'
+];
 
 /**
  * metalsmith plugin repl
@@ -80,6 +87,11 @@ const renderTemplate = (files, metalsmith, done) => {
     async.each(keys, run, done);
 
     function run(file, done) {
+        const extName = extname(file);
+        if (NOT_RENDER_SUFFIX.indexOf(extName) > -1) {
+            done();
+            return;
+        }
         const str = files[file].contents.toString();
         RENDER(str, metadata, (err, res) => {
             if (err) {
@@ -143,6 +155,14 @@ export default function(curPrompts, projectName, registry, inCurrent) {
     metalsmith
         .use(ask(curPrompts))
         .use(filterFiles)
+        .use(metalsmithCopy({
+            pattern: '*(babelrc|eslintrc|jshintrc|fecsrc|foreverignore|gitignore)',
+            move: true,
+            transform: file => {
+                console.log('-----' + file);
+                return `.${file}`;
+            }
+        }))
         .use(renderTemplate)
         .clean(false)
         .destination(join(process.cwd(), dest))
@@ -154,19 +174,20 @@ export default function(curPrompts, projectName, registry, inCurrent) {
             const curDependencies = Object.assign({}, meta.ALL_DEPENDENCIES);
 
             const metadata = metalsmith.metadata();
-            console.log('metadata', metadata);
-
-            // if (metadata.redis) {
-            //     curDependencies.save.push('redis');
-            // }
-
-            // if (metadata.uuap) {
-            //     curDependencies.saveDev.push('jsonwebtoken');
-            // }
+            // console.log('metadata', metadata);
 
             process.chdir(dest);
 
-            if (metadata.depPkg === 'npm') {
+            const depPkg = metadata.depPkg;
+
+            if (depPkg === 'none') {
+                console.log('Start:\n');
+                console.log(`cd ${dest}`);
+                console.log('npm intall');
+                console.log('npm run dev');
+                return;
+            }
+            else if (metadata.depPkg === 'npm') {
                 npmInstall(meta.ALL_DEPENDENCIES, registry, () => {
                     console.log('all deps install done\n');
                     console.log('Please complete your profile:\n');

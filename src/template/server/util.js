@@ -1,7 +1,4 @@
-/**
- * @file 通用方法
- * @author ielgnaw(wuji0223@gmail.com)
- */
+import {join} from 'path';
 
 /**
  * 获取 ip
@@ -28,3 +25,6 @@ export function getIP() {
 
     return ip;
 }
+
+// 日志目录
+export const logDir = join(__dirname, '..', 'logs');

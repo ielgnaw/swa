@@ -1,6 +1,6 @@
 /**
  * @file build
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 /* globals rm, mkdir */

@@ -1,3 +1,8 @@
+/**
+ * @file 通用方法
+ * @author <%- author %>
+ */
+
 import {join} from 'path';
 
 /**

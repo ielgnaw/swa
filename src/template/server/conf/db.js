@@ -1,6 +1,6 @@
 /**
  * @file 数据库配置
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 const IS_DEV = process.env.NODE_ENV === 'development';

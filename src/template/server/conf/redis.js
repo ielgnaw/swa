@@ -1,7 +1,7 @@
 /**
  * @file redis 默认配置
  *       @see https://www.npmjs.com/package/redis#options-object-properties
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 export default {

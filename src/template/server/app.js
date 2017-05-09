@@ -1,6 +1,6 @@
 /**
  * @file 入口
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 import 'babel-polyfill';
@@ -26,16 +26,11 @@ import webpackDevConfig from '../build/webpack.dev.conf';
 import webpackProdConfig from '../build/webpack.prod.conf';
 import {setCtxRenderPath, getIP} from '../build/util';
 import config from '../build/config';
-import {logDir/*, clicksLogDir*/} from './util';
-// import {setCtx} from './conf/db';
+import {logDir} from './util';
 
 if (!existsSync(logDir)) {
     mkdirp.sync(logDir);
 }
-
-// if (!existsSync(clicksLogDir)) {
-//     mkdirp.sync(clicksLogDir);
-// }
 
 const debug = debugPackage('dev-server');
 const IS_DEV = process.env.NODE_ENV === 'development';

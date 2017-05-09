@@ -1,6 +1,6 @@
 /**
  * @file 去掉 tpl 中带有 src 属性的 script 标签，webpack build 时会插入带有 hash 的标签
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 import cheerio from 'cheerio';

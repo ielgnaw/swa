@@ -1,6 +1,6 @@
 /**
  * @file 入口
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 import React, {Component} from 'react';

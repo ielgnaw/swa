@@ -1,6 +1,6 @@
 /**
  * @file webpack prod config
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 import fs from 'fs';

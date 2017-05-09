@@ -1,6 +1,6 @@
 /**
  * @file uuap 配置
- * @author ielgnaw(wuji0223@gmail.com)
+ * @author <%- author %>
  */
 
 import os from 'os';

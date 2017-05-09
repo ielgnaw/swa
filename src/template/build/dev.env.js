@@ -1,3 +1,8 @@
+/**
+ * @file dev env
+ * @author <%- author %>
+ */
+
 import merge from 'webpack-merge';
 import prodEnv from './prod.env';
 

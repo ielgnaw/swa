@@ -1,3 +1,8 @@
+/**
+ * @file webpack base conf
+ * @author <%- author %>
+ */
+
 import {resolve} from 'path';
 import eslintFriendlyFormatter from 'eslint-friendly-formatter';
 import config from './config';

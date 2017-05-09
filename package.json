@@ -1,14 +1,13 @@
 {
   "name": "swa",
-  "version": "0.0.7-beta.2",
+  "version": "0.0.7-beta.3",
   "description": "Scaffold for web application",
   "main": "./lib/cli.js",
   "bin": {
     "swa": "bin/swa"
   },
   "preferGlobal": true,
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [
     "scaffold",
     "scaffold-framework",
@@ -34,7 +33,8 @@
   },
   "devDependencies": {
     "fecs": "^1.2.3",
-    "figlet": "^1.2.0"
+    "figlet": "^1.2.0",
+    "q": "^1.5.0"
   },
   "author": "ielgnaw <wuji0223@gmail.com>",
   "license": "MIT"

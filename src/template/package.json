@@ -8,7 +8,7 @@
     "dev": "NODE_ENV=development DEBUG=dev-server nodemon server/app.js --exec babel-node -i client -i sock",
     "build": "rm -rf client/output && NODE_ENV=production babel-node build/build.js",
     "product": "npm run build && NODE_ENV=production FOREVER_ROOT=./ foreverc start forever.json",
-    "stop": "FOREVER_ROOT=./ foreverc stop fenci",
+    "stop": "FOREVER_ROOT=./ foreverc stop <%= name %>",
     "list": "FOREVER_ROOT=./ foreverc list",
     "logs": "FOREVER_ROOT=./ foreverc logs",
     "postinstall": "mkdir -p logs"

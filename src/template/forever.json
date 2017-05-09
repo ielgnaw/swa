@@ -1,5 +1,5 @@
 {
-    "uid": "fenci",
+    "uid": "<%= name %>",
     "append": true,
     "script": "server/wrapper.js",
     "sourceDir": "./",

@@ -15,6 +15,7 @@ figlet('S W A', (err, data) => {
         console.dir(err);
         return;
     }
+    console.log(data);
     yargs
         .usage('Usage: $0 <command> [options]')
         .commandDir(join(__dirname, './command'))

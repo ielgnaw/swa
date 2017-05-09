@@ -159,7 +159,6 @@ export default function(curPrompts, projectName, registry, inCurrent) {
             pattern: '*(babelrc|eslintrc|jshintrc|fecsrc|foreverignore|gitignore)',
             move: true,
             transform: file => {
-                console.log('-----' + file);
                 return `.${file}`;
             }
         }))
@@ -181,22 +180,26 @@ export default function(curPrompts, projectName, registry, inCurrent) {
             const depPkg = metadata.depPkg;
 
             if (depPkg === 'none') {
-                console.log('Start:\n');
+                console.log('\nStart:\n');
                 console.log(`cd ${dest}`);
                 console.log('npm intall');
                 console.log('npm run dev');
-                return;
+                console.log(`\nFor more information, please see ${join(dest, 'README.md')}\n`);
             }
             else if (metadata.depPkg === 'npm') {
                 npmInstall(meta.ALL_DEPENDENCIES, registry, () => {
                     console.log('all deps install done\n');
-                    console.log('Please complete your profile:\n');
+                    console.log(`cd ${dest}`);
+                    console.log('npm run dev');
+                    console.log(`\nFor more information, please see ${join(dest, 'README.md')}\n`);
                 });
             }
             else {
                 yarnInstall(meta.ALL_DEPENDENCIES, () => {
                     console.log('all deps install done\n');
-                    console.log('Please complete your profile:\n');
+                    console.log(`cd ${dest}`);
+                    console.log('npm run dev');
+                    console.log(`\nFor more information, please see ${join(dest, 'README.md')}\n`);
                 });
             }
         });

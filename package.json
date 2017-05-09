@@ -1,6 +1,6 @@
 {
   "name": "swa",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Scaffold for web application",
   "main": "./lib/cli.js",
   "bin": {
@@ -14,7 +14,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "sourcemap": "./node_modules/.bin/babel src -d lib -s",
     "watch": "shx rm -rf lib && babel src -d lib --copy-files -w",
-    "prepublish": "npm run compile",
+    "prepublish": "npm run compile"
   },
   "keywords": [
     "scaffold",
@@ -37,9 +37,7 @@
     "metalsmith": "^2.3.0",
     "metalsmith-copy": "^0.3.0",
     "rimraf": "^2.6.1",
-    "yargs": "^7.1.0"
-  },
-  "devDependencies": {
+    "yargs": "^7.1.0",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.24.1",
     "babel-istanbul": "^0.12.2",

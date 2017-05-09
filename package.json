@@ -1,6 +1,6 @@
 {
   "name": "swa",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Scaffold for web application",
   "main": "./lib/cli.js",
   "bin": {

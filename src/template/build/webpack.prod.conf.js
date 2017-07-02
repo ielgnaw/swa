@@ -60,6 +60,7 @@ const webpackPluginList = [
         'process.env': env
     }),
     new webpack.optimize.UglifyJsPlugin({
+        // 最紧凑的输出
         beautify: false,
         compress: {
             // 在 UglifyJs 删除没有用到的代码时不输出警告
@@ -82,16 +83,22 @@ const webpackPluginList = [
 entryTplList.forEach(item => {
     webpackPluginList.push(
         new HtmlWebpackPlugin({
+            // 最终生成的 html 文件名称，其中可以带上路径名
             filename: resolve(__dirname, `../client/output/${item.chunksName}.html`),
+            // 页面模板的地址, 支持一些特殊的模板, 比如 jade, ejs, handlebar 等
             template: `../server/view/${item.chunksName}.html`,
             inject: 'body',
             minify: {
                 removeComments: true,
                 collapseWhitespace: true
             },
+            // 文件中插入的 entry 名称，注意必须在 entry 中有对应的申明
+            // 或者是使用 CommonsChunkPlugin 提取出来的 chunk. 简单理解即页面需要读取的 js 文件模块
             chunks: [item.chunksName, 'vendor', 'manifest'],
             // 如果打开 vendor 和 manifest 那么需要配置 chunksSortMode 保证引入 script 的顺序
-            chunksSortMode: 'dependency'
+            chunksSortMode: 'dependency',
+            // 是否给页面的资源文件后面增加 hash, 防止读取缓存
+            hash: false
         })
     );
 });

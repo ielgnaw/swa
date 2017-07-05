@@ -1,9 +1,11 @@
 {
     "env": {
-        "ecmaVersion": 6,
         "node": true
     },
-
+    "parserOptions": {
+        "ecmaVersion": 8,
+        "sourceType": "module"
+    },
     "rules": {
         "no-console": 0
     }

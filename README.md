@@ -22,4 +22,3 @@ ES6 Compile Watch
 ---
     
     npm run watch
-

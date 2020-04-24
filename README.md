@@ -7,7 +7,7 @@ Test
     npm test
 
 
-Coverage
+Coverages
 ---
     
     npm run coverage

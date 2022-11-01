@@ -48,7 +48,7 @@
     "figlet": "^1.2.0",
     "inquirer": "^3.3.0",
     "metalsmith": "^2.3.0",
-    "metalsmith-copy": "^0.3.0",
+    "metalsmith-copy": "^0.4.1",
     "mocha": "^3.3.0",
     "ora": "^1.2.0",
     "rimraf": "^2.6.1",
